@@ -1,7 +1,7 @@
 --creating client with the macid as the client id 
---m = mqtt.Client(wifi.sta.getmac())   --10sec keep alive
+m = mqtt.Client(wifi.sta.getmac())   --10sec keep alive
 --lwt function sends the last will and testament message to tbe sent to the broker in case it goes offline
---m:lwt('lwt','offline',0,0)    
+m:lwt('lwt','offline',0,0)    
 
 --mqtt offline function keeps checking whether the device has gone offline or not
 m:on('offline',function(con) c = false end) 

@@ -1,11 +1,12 @@
 
-mqtt_broker_ip='192.168.1.115'
+mqtt_broker_ip='192.168.1.126'
 mqtt_port = 1883
 qos = 0
 
 macid = wifi.sta.getmac()
 --wait for WiFi connection 
 wifi_available=0
+broker_connect_tries=0
 if wifi_available==0 then
 	tmr.alarm(1,1000,1,function()
 		if wifi.sta.getip()==nil then
@@ -13,16 +14,25 @@ if wifi_available==0 then
 		else
 		    print ('IP is '..wifi.sta.getip())
 		    wifi_available=1
-		    m = mqtt.Client(wifi.sta.getmac()) 
-		    m:connect(mqtt_broker_ip,mqtt_port,0,function(conn) 
-			print('mqtt connected')
-			tmr.stop(1)
-			tmr.unregister(1)
-			end)
-		end
+		    mqqt_connection()
+	        end
 	end)
 end
-tmr.alarm(0,30000,1,function()  --sleeps after being active for 30seconds
+
+function mqqt_connection()
+	print ("in broker code")
+	broker_connect_tries=broker_connect_tries + 1 
+	dofile('mqttsetup_valve.lua') 
+	m:connect(mqtt_broker_ip,mqtt_port,0,function(conn) 
+		tmr.stop(1)
+		tmr.unregister(1)
+		topic = 'esp/'..macid                 -- topic to subscribe to 
+                m:subscribe(topic,0,function(conn) end)
+		print('mqtt connected')
+	end)     
+end	
+
+tmr.alarm(0,60000,1,function()  --sleeps after being active for 30seconds
 	print("sleep")
 	wifi.sta.disconnect()
 	node.dsleep(sleepTime)
